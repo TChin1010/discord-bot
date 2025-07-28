@@ -36,9 +36,6 @@ async def on_member_join(member):
                 'Hows the weather', 'Want to get some pizza?']
     await join_message.reply(messages[randint(0, len(messages) - 1)])
   
-    
-
-
 @bot.command()
 async def help(ctx):
     '''
@@ -54,6 +51,8 @@ async def help(ctx):
         env['env'] = embed
         embed.add_field(name='hi', value='Whats the bot up to right now? Find out with this command!')
         embed.add_field(name='brainrot', value='Get the latest brainrot today!')
+        embed.add_field(name='lateststocks', value='View the latest and hottest stocks!')
+        embed.add_field(name='subwaysufers', value='subway sufers')
         await ctx.send(embed=embed)
     except:
         print('Error !help')
@@ -78,6 +77,26 @@ async def brainrotmax(ctx):
     except:
         print('Error !brainrotmax')
         log.reportCommand('!brainrotmax', env)
+
+@bot.command()
+async def subwaysurfers(ctx):
+    '''
+    Help the user "stay concentrated"
+    '''
+    await ctx.send('https://tenor.com/b1ADJ.gif')
+@bot.command()
+async def crypto8ball(ctx):
+    '''
+    Get the latest stocks from twelve data
+    '''
+    env = {}
+
+    try:
+        api = requests.get('https://api.twelvedata.com/stocks?source=docs')
+        print(api.text)
+    except:
+        print('Error !lateststocks')
+        log.reportCommand('lateststocks', env)
 
 
 # main
