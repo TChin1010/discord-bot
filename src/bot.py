@@ -28,7 +28,10 @@ bot = commands.Bot(command_prefix="!", intents=intents, activity=discord.CustomA
 
 def update_bitcoin_script():
     '''
-    Updates the script every 24 hours
+    @Author: Tyler Chin
+
+    Updates the notebook script every 24 hours to get the 
+    latest the greatest data!
     '''
     with open('src\\bitcoin.ipynb') as f:
             nb = nbformat.read(f, as_version=4)
@@ -43,6 +46,8 @@ async def on_ready():
 @bot.event
 async def on_member_join(member):
     '''
+    @Author
+
     Send a welcome sticker to a perosn who joins a server
     '''
 
@@ -56,7 +61,9 @@ async def on_member_join(member):
 @bot.command()
 async def help(ctx):
     '''
-    Sends a help page to the user
+    @Author: Tyler
+
+    Sends a help page to the user to show them all controls
     '''
     env = {}
     try:
@@ -79,6 +86,8 @@ async def help(ctx):
 @bot.command()
 async def brainrotmax(ctx):
     '''
+    @Author: Tyler Chin
+
     Sends a randomly selected reddit hot meme
     on r/memes!
     '''
@@ -99,12 +108,19 @@ async def brainrotmax(ctx):
 @bot.command()
 async def subwaysurfers(ctx):
     '''
+    @Author: Tyler Chin
+
     Help the user "stay concentrated"
     '''
     await ctx.send('https://tenor.com/b1ADJ.gif')
 
 @bot.command()
 async def askGemini(ctx, *, message):
+    '''
+    @Author: Tyler Chin
+
+    The user can ask Gemini any question that is passed through <message>
+    '''
     with open('src\\env.json', 'r') as file:
         env = json.load(file) # extracts the json evniroment
     
@@ -118,7 +134,9 @@ async def askGemini(ctx, *, message):
 @bot.command()
 async def latestBTC(ctx):
     '''
-    Get the latest stocks from twelve data
+    @Author: Tyler Chin
+
+    Get the latest Bitcoin data with this prediction model
     '''
     env = {}
     
