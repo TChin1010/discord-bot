@@ -9,14 +9,31 @@ import discord
 import requests
 import json
 import src.log as log
+import nbformat
+import os
+import schedule
+import time
+import asyncio
 
+from google import genai
 from random import randint
 from discord.ext import commands
+from nbclient import NotebookClient
+
 
 intents = discord.Intents.all()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents, activity=discord.CustomActivity(name='Scrolling Reels'), help_command=None)
 
+
+def update_bitcoin_script():
+    '''
+    Updates the script every 24 hours
+    '''
+    with open('src\\bitcoin.ipynb') as f:
+            nb = nbformat.read(f, as_version=4)
+
+    NotebookClient(nb).execute()
 
 # Bot commands and events
 @bot.event
@@ -51,7 +68,8 @@ async def help(ctx):
         env['env'] = embed
         embed.add_field(name='hi', value='Whats the bot up to right now? Find out with this command!')
         embed.add_field(name='brainrot', value='Get the latest brainrot today!')
-        embed.add_field(name='lateststocks', value='View the latest and hottest stocks!')
+        embed.add_field(name='latestBTC', value='View the latest and hottest Bitcoin updates!')
+        embed.add_field(name='askGemini', value='Ask Gemini 2.0 about random questions you might have!')
         embed.add_field(name='subwaysufers', value='subway sufers')
         await ctx.send(embed=embed)
     except:
@@ -84,24 +102,62 @@ async def subwaysurfers(ctx):
     Help the user "stay concentrated"
     '''
     await ctx.send('https://tenor.com/b1ADJ.gif')
+
 @bot.command()
-async def crypto8ball(ctx):
+async def askGemini(ctx, *, message):
+    with open('src\\env.json', 'r') as file:
+        env = json.load(file) # extracts the json evniroment
+    
+    client = genai.Client(api_key=env['gemini_token'])
+
+    response = client.models.generate_content(
+        model="gemini-2.0-flash", contents= message + ". in less than 200 words"
+    )
+    await ctx.send(response.text)
+    
+@bot.command()
+async def latestBTC(ctx):
     '''
     Get the latest stocks from twelve data
     '''
     env = {}
-
+    
+    # Load notebook
     try:
-        api = requests.get('https://api.twelvedata.com/stocks?source=docs')
-        print(api.text)
+        with open('src\\bitcoin.ipynb') as f:
+            nb = nbformat.read(f, as_version=4)
+            env['nb'] = nb
+
+        # Loop through cells and print stored outputs
+        for cell in nb.cells:
+            if "outputs" in cell:
+                for output in cell["outputs"]:
+                    if output.output_type == "execute_result":
+                        data = output["data"]['text/plain']
+        
+        env['data'] = data
+        data = data[1:-1]
+        data = data.split(', ')
+        message = 'Yesterdays closing value for BTC was $' + data[0] + '. My predicted closing value is $' + data[1]
+        await ctx.send(message)
     except:
         print('Error !lateststocks')
         log.reportCommand('lateststocks', env)
 
-
 # main
 if __name__ == "src.bot":
+    schedule.every().day.at('00:00').do(update_bitcoin_script)
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    with open('src\\bitcoin.ipynb') as f:
+            nb = nbformat.read(f, as_version=4)
+
+    NotebookClient(nb).execute()
+
     with open('src\\env.json', 'r') as file:
         env = json.load(file) # extracts the json evniroment
 
     bot.run(env['login_token'])
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
